@@ -1,0 +1,35 @@
+#include <stdio.h>
+
+int next_token() {
+    static int token = 1000;
+    return ++token;
+}
+
+int auto_token() {
+    int token = 1000;
+    return ++token;
+}
+
+int main() {
+    int s1 = next_token();
+    int s2 = next_token();
+    int s3 = next_token();
+
+    int a1 = auto_token();
+    int a2 = auto_token();
+    int a3 = auto_token();
+
+    printf("Static: %d %d %d\n", s1, s2, s3);
+
+    printf("Auto: %d %d %d\n", a1, a2, a3);
+
+    printf("Register loop: ");
+
+    for (register int i = 1; i <= 5; i++) {
+        printf("%d ", i);
+    }
+
+    printf("\n");
+
+    return 0;
+}
