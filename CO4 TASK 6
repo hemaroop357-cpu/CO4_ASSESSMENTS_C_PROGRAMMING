@@ -1,0 +1,149 @@
+#include <stdio.h>
+
+#define MAX 10
+
+typedef struct {
+    int day, month, year;
+} Date;
+
+typedef struct {
+    int hour, minute;
+} Time;
+
+enum Type {
+    PACKAGED,
+    COOKED,
+    COMBO
+};
+
+struct Item {
+    int id;
+    char name[30];
+    float price;
+    int stock;
+    enum Type type;
+
+    union {
+        Date expiry;
+        Time prepared;
+        int comboItems[3];
+    } details;
+};
+
+struct Sale {
+    int id;
+    int quantity;
+    float revenue;
+};
+
+int findItem(struct Item items[], int n, int id) {
+    for (int i = 0; i < n; i++) {
+        if (items[i].id == id)
+            return i;
+    }
+    return -1;
+}
+
+void recordSale(struct Item items[], int n,
+                struct Sale sales[], int *count,
+                int id, int quantity) {
+
+    int index = findItem(items, n, id);
+
+    if (index == -1 || quantity <= 0) {
+        printf("Invalid item or quantity.\n");
+        return;
+    }
+
+    if (items[index].stock < quantity) {
+        printf("Insufficient stock for %s\n",
+               items[index].name);
+        return;
+    }
+
+    items[index].stock -= quantity;
+
+    sales[*count].id = id;
+    sales[*count].quantity = quantity;
+    sales[*count].revenue =
+        items[index].price * quantity;
+
+    (*count)++;
+
+    printf("Sale recorded: %s x%d = Rs. %.2f\n",
+           items[index].name, quantity,
+           items[index].price * quantity);
+}
+
+void sortSales(struct Sale sales[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (sales[i].revenue < sales[j].revenue) {
+                struct Sale temp = sales[i];
+                sales[i] = sales[j];
+                sales[j] = temp;
+            }
+        }
+    }
+}
+
+void expiryWarning(struct Item items[], int n) {
+    printf("\nExpiry Warning:\n");
+
+    for (int i = 0; i < n; i++) {
+        if (items[i].type == PACKAGED) {
+            if (items[i].details.expiry.day <= 14) {
+                printf("%s expires soon!\n",
+                       items[i].name);
+            }
+        }
+    }
+}
+
+int main() {
+    struct Item items[MAX] = {
+        {1, "Milk Packet", 30, 10, PACKAGED,
+         {.expiry = {14,10,2026}}},
+
+        {2, "Veg Meals", 60, 8, COOKED,
+         {.prepared = {10,30}}},
+
+        {3, "Biscuit Pack", 20, 15, PACKAGED,
+         {.expiry = {20,10,2026}}},
+
+        {4, "Meals Combo", 100, 5, COMBO,
+         {.comboItems = {1,2,3}}}
+    };
+
+    struct Sale sales[30];
+    int count = 0;
+
+    /* Sample input values */
+
+    recordSale(items, 4, sales, &count, 1, 2);
+    recordSale(items, 4, sales, &count, 2, 3);
+    recordSale(items, 4, sales, &count, 1, 50);
+    recordSale(items, 4, sales, &count, 4, 1);
+
+    expiryWarning(items, 4);
+
+    sortSales(sales, count);
+
+    printf("\nSales Summary:\n");
+
+    for (int i = 0; i < count; i++) {
+        printf("Item ID: %d Quantity: %d Revenue: Rs. %.2f\n",
+               sales[i].id,
+               sales[i].quantity,
+               sales[i].revenue);
+    }
+
+    printf("\nRemaining Stock:\n");
+
+    for (int i = 0; i < 4; i++) {
+        printf("%s: %d\n",
+               items[i].name, items[i].stock);
+    }
+
+    return 0;
+}
