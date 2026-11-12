@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int day, month, year;
+} Date;
+
+typedef struct {
+    int systolic, diastolic;
+} BloodPressure;
+
+typedef struct {
+    char name[50];
+    int age;
+    char phone[16];
+    BloodPressure bp;
+    Date visitDate;
+} Patient;
+
+void addPatient(Patient *p, char name[], int age,
+                char phone[], int s, int d, Date date) {
+    strcpy(p->name, name);
+    strcpy(p->phone, phone);
+    p->age = age;
+    p->bp.systolic = s;
+    p->bp.diastolic = d;
+    p->visitDate = date;
+}
+
+void sortByAge(Patient p[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (p[i].age > p[j].age) {
+                Patient temp = p[i];
+                p[i] = p[j];
+                p[j] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    Patient p[3];
+
+    addPatient(&p[0], "Anu", 24, "9876543210",
+               120, 80, (Date){12,10,2026});
+
+    addPatient(&p[1], "Rahul", 19, "9123456780",
+               118, 76, (Date){13,10,2026});
+
+    addPatient(&p[2], "Meena", 45, "9988776655",
+               135, 90, (Date){14,10,2026});
+
+    sortByAge(p, 3);
+
+    printf("Patients sorted by age:\n");
+
+    for (int i = 0; i < 3; i++) {
+        printf("%s Age:%d Phone:%s BP:%d/%d Date:%02d/%02d/%d\n",
+               p[i].name, p[i].age, p[i].phone,
+               p[i].bp.systolic, p[i].bp.diastolic,
+               p[i].visitDate.day, p[i].visitDate.month,
+               p[i].visitDate.year);
+    }
+
+    return 0;
+}
